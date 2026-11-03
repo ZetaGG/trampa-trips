@@ -1,0 +1,13 @@
+# Render outputs and scratch (regenerable)
+/tmp/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+
+# CAD intermediates (regenerable from src/) — printable STL/3MF are tracked on purpose
+/STEP/
+/GLB/
