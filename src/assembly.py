@@ -1,4 +1,4 @@
-"""Ensamble completo de la Trampa de Trips Inteligente (sin tornillos, modular)."""
+"""Ensamble completo de la Trampa de Trips Inteligente (Opción A: 165x80x60 mm, sin tornillos)."""
 
 import cadgen
 from cadgen import build123d as bd
@@ -21,7 +21,7 @@ KINEMATICS = {
             "abrir_tapa",
             parent="#chasis_bandeja",
             child="#tapa_carcasa",
-            origin=(0.0, sp.POD_WORLD_Y, sp.POD_WORLD_Z + 38.0),
+            origin=(0.0, sp.POD_WORLD_Y, sp.POD_WORLD_Z + sp.INNER_Z),
             direction=(0.0, 0.0, 1.0),
             limits=(0.0, 95.0),
         ),
@@ -31,13 +31,13 @@ KINEMATICS = {
             child="#bateria_12v_4000mah",
             origin=(sp.BATT_CENTER_X, sp.POD_WORLD_Y + sp.BATT_CENTER_Y, sp.POD_WORLD_Z + 10.0),
             direction=(0.0, 0.0, 1.0),
-            limits=(0.0, 60.0),
+            limits=(0.0, 65.0),
         ),
         cadgen.slider(
             "deslizar_parasol",
             parent="#chasis_bandeja",
             child="#parasol_capucha",
-            origin=(0.0, sp.POD_WORLD_Y + 68.0, sp.POD_WORLD_Z + 20.0),
+            origin=(0.0, sp.POD_WORLD_Y + sp.OUTER_Y / 2.0 + 4.0, sp.POD_WORLD_Z + sp.OPTICAL_CENTER_Z),
             direction=(0.0, 0.0, 1.0),
             limits=(0.0, 70.0),
         ),
@@ -45,7 +45,7 @@ KINEMATICS = {
             "separar_bisel",
             parent="#chasis_bandeja",
             child="#bisel_ventana",
-            origin=(0.0, sp.POD_WORLD_Y + 68.0, sp.POD_WORLD_Z + 15.5),
+            origin=(0.0, sp.POD_WORLD_Y + sp.OUTER_Y / 2.0 + 4.0, sp.POD_WORLD_Z + sp.OPTICAL_CENTER_Z),
             direction=(0.0, 1.0, 0.0),
             limits=(0.0, 35.0),
         ),
@@ -53,7 +53,7 @@ KINEMATICS = {
             "separar_ventana",
             parent="#chasis_bandeja",
             child="#ventana_pc",
-            origin=(0.0, sp.POD_WORLD_Y + 66.0, sp.POD_WORLD_Z + 15.5),
+            origin=(0.0, sp.POD_WORLD_Y + sp.OUTER_Y / 2.0 + 2.0, sp.POD_WORLD_Z + sp.OPTICAL_CENTER_Z),
             direction=(0.0, 1.0, 0.0),
             limits=(0.0, 18.0),
         ),
@@ -77,7 +77,7 @@ KINEMATICS = {
         },
         "abierto_inspeccion": {
             "abrir_tapa": 85.0,
-            "extraer_bateria_12v": 42.0,
+            "extraer_bateria_12v": 50.0,
             "deslizar_parasol": 55.0,
             "separar_bisel": 28.0,
             "separar_ventana": 14.0,

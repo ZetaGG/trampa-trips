@@ -1,4 +1,4 @@
-"""Geometric, topological, and interference checks for the Trampa de Trips CAD models."""
+"""Geometric, topological, and interference checks for the Trampa de Trips CAD models (Option A)."""
 
 from __future__ import annotations
 
@@ -91,29 +91,30 @@ def main() -> None:
     esp_bb = esp_sel.bounding_box()
     batt_sel = scene.resolve("#bateria_12v_4000mah").shape()
     batt_bb = batt_sel.bounding_box()
-    buck_sel = scene.resolve("#buck_lm2596_12v_3v3").shape()
+    buck_sel = scene.resolve("#buck_70x30x20").shape()
     buck_bb = buck_sel.bounding_box()
     base_sel = scene.resolve("#soporte_base").shape()
     base_bb = base_sel.bounding_box()
 
     optical_dist_mm = card_bb.min.Y - win_bb.max.Y
     print(f"  Tarjeta azul size: {card_bb.size.X:.2f} x {card_bb.size.Z:.2f} x {card_bb.size.Y:.2f} mm")
-    print(f"  ESP32-S3 PCB size: {esp_bb.size.X:.2f} x {esp_bb.size.Y:.2f} x {esp_bb.size.Z:.2f} mm")
-    print(f"  Bateria 12V 4000mAh size: {batt_bb.size.X:.2f} x {batt_bb.size.Y:.2f} x {batt_bb.size.Z:.2f} mm")
-    print(f"  LM2596 Buck 12V->3.3V size: {buck_bb.size.X:.2f} x {buck_bb.size.Y:.2f} x {buck_bb.size.Z:.2f} mm")
+    print(f"  ESP32-S3 PCB size (X x Y x Z): {esp_bb.size.X:.2f} x {esp_bb.size.Y:.2f} x {esp_bb.size.Z:.2f} mm")
+    print(f"  Bateria 12V 4000mAh size (X x Y x Z): {batt_bb.size.X:.2f} x {batt_bb.size.Y:.2f} x {batt_bb.size.Z:.2f} mm")
+    print(f"  Buck 70x30x20 size (X x Y x Z): {buck_bb.size.X:.2f} x {buck_bb.size.Y:.2f} x {buck_bb.size.Z:.2f} mm")
     print(f"  Clear optical distance (window front to sticky card face): {optical_dist_mm:.2f} mm")
     print(f"  Table stand bottom Z datum: {base_bb.min.Z:.3f} mm")
 
     assert abs(card_bb.size.X - 100.0) < 0.05
     assert abs(card_bb.size.Z - 250.0) < 0.05
-    assert abs(esp_bb.size.X - 58.0) < 0.05
-    assert abs(esp_bb.size.Y - 28.0) < 0.05
+    assert abs(esp_bb.size.X - 28.0) < 0.05
+    assert abs(esp_bb.size.Y - 58.0) < 0.05
     assert abs(batt_bb.size.X - 70.0) < 0.05
     assert abs(batt_bb.size.Y - 60.0) < 0.05
     assert abs(batt_bb.size.Z - 20.0) < 0.05
-    assert abs(buck_bb.size.X - 21.0) < 0.05
-    assert abs(buck_bb.size.Y - 43.0) < 0.05
-    assert 120.0 <= optical_dist_mm <= 160.0
+    assert abs(buck_bb.size.X - 70.0) < 0.05
+    assert abs(buck_bb.size.Y - 30.0) < 0.05
+    assert abs(buck_bb.size.Z - 20.0) < 0.05
+    assert 115.0 <= optical_dist_mm <= 155.0
     assert abs(base_bb.min.Z - 0.0) < 0.01
 
     print("\nALL GEOMETRIC & TOPOLOGICAL CHECKS PASSED!")
