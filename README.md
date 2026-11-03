@@ -4,6 +4,10 @@
 
 ![Estado](https://img.shields.io/badge/estado-prototipo-orange) ![Licencia](https://img.shields.io/badge/licencia-MIT-blue) ![CAD](https://img.shields.io/badge/CAD-cadgen%2Fbuild123d-9cf)
 
+> **Dos versiones del modelo:** `src/` es el diseño **original** y `src/ligero/` es la versión
+> **optimizada para imprimir** (mismas medidas externas y mismos encajes, **−46 % de material**).
+> Ver [§7](#7-versión-ligera--optimizada-para-imprimir).
+
 ---
 
 ## 1. El problema
@@ -14,11 +18,12 @@ Hoy, el agricultor decide fumigar **contando trips a mano** en trampas adhesivas
 
 ## 2. Nuestra solución
 
-Una **trampa adhesiva azul** (color más atractivo para los trips) monitoreada por una **cámara OV5640 (5 MP)** controlada por una **ESP32-S3**. La cámara fotografía la tarjeta periódicamente, guarda las imágenes en **microSD** y estima la **densidad/cobertura de trips** para decidir "es hora de fumigar", mostrando un **LED de estado verde/rojo** en el exterior.
+Una **trampa adhesiva azul** (color más atractivo para los trips) monitoreada por una **cámara OV5640 (5 MP)** controlada por una **ESP32-S3**. La cámara fotografía la tarjeta periódicamente y guarda las imágenes en **microSD**; la **densidad/cobertura** de trips sobre la tarjeta (no el conteo individuo a individuo) define si ya toca fumigar.
 
-- **Sin WiFi:** no requiere infraestructura en el campo (solo microSD).
-- **Sin tornillos:** toda la carcasa ensambla a presión (clips snap-fit, deslizantes y fricción).
+- **Sin WiFi:** no requiere infraestructura en el campo; las fotos se revisan luego en el PC.
+- **Sin tornillos:** toda la carcasa ensambla a presión (clips snap-fit, correderas y fricción).
 - **Batería recargable 12 V extraíble:** se carga fuera de la trampa.
+- **Electrónica encerrada, tarjeta al aire:** la tarjeta azul queda expuesta (los trips deben posarse); la electrónica vive en un POD sellado aparte.
 
 ## 3. Funcionamiento (flujo)
 
@@ -26,15 +31,11 @@ Una **trampa adhesiva azul** (color más atractivo para los trips) monitoreada p
 Deep sleep (timer 2–4 h)
    │ despierta
    ▼
-Encender LED difuso de iluminación
-   ▼
 Capturar foto (OV5640)
    ▼
-Guardar JPEG en microSD  ──►  análisis fino posterior en PC (OpenCV)
+Guardar JPEG en microSD  ──►  análisis de densidad/cobertura con OpenCV
    ▼
-Estimar densidad/cobertura de trips en la propia placa
-   ▼
-LED verde (OK) / LED rojo (FUMIGAR)
+Si la cobertura de trips supera el umbral  ──►  "FUMIGAR"
    ▼
 Volver a deep sleep
 ```
@@ -43,113 +44,164 @@ Volver a deep sleep
 
 ```
 Batería 12 V (3S1P 18650, 4000 mAh, ~70×60×20 mm)
-   │  conector DC de barril 2.1×5.5 mm (modificable)
+   │  conector DC de barril 2.1×5.5 mm (extraíble para cargar)
    ▼
-Interruptor deslizante
+Buck DC-DC (70×30×20 mm, 12 V → 3.3 V)
    ▼
-Buck DC-DC LM2596  (12 V → 3.3 V)
-   ▼
-ESP32-S3  (pin 3V3 + GND)
-   ├── Cámara OV5640 (cinta FPC de 24 pines)
-   ├── microSD (fotos)
-   └── LED RGB de estado (GPIO)
+ESP32-S3 (28×58 mm, pines hacia arriba sobre rieles ranurados)
+   ├── Cámara OV5640 (cinta FPC de 24 pines, frente estrecho de 86 mm)
+   └── microSD (fotos)
 ```
+
+No hay interruptor, ni LED de estado, ni bolsa de sílice: el equipo va sellado y se
+enciende/apaga quitando la batería.
 
 ## 5. Lista de materiales (BOM)
 
 | Componente | Cant. | Especificación |
 |---|---|---|
-| ESP32-S3 (placa de desarrollo) | 1 | 58 × 28 mm, USB-C |
+| ESP32-S3 (placa de desarrollo) | 1 | 28 × 58 mm, orientada hacia la cámara con pines hacia arriba |
 | Cámara OV5640 | 1 | 5 MP, cinta FPC 24 pines |
-| Batería recargable de litio | 1 | 12 V, 4000 mAh, 3S1P 18650, ~70×60×20 mm |
-| Convertidor Buck | 1 | LM2596 (12 V → 3.3 V), 21 × 43 mm |
-| Interruptor deslizante | 1 | SPDT, 8 × 19 mm |
-| LED RGB | 1 | 5 mm (estado verde/rojo) |
-| LED de iluminación | 2–4 | blancos difusos + transistor |
+| Batería recargable de litio | 1 | 12 V, 4000 mAh, 3S1P 18650, ~70×60×20 mm (acostada detrás de la ESP) |
+| Convertidor Buck | 1 | 70 × 30 × 20 mm (12 V → 3.3 V, al fondo detrás de la batería) |
 | Tarjeta adhesiva azul | 1 | 10 × 25 cm (comercial, reemplazable) |
-| Bolsa de sílice | 1 | desecante anticondensación |
 | Ventana óptica | 1 | policarbonato/acrílico 25 × 25 × 2 mm (cortada) |
-| Filamento | — | PETG para todo el cuerpo (no TPU) |
+| Filamento | — | PETG para todo el cuerpo (no TPU, sin tornillos) |
 
-## 6. Piezas impresas (sin tornillos, PETG)
+## 6. Piezas impresas (sin tornillos, PETG — POD nominal `86×172×60` mm)
 
 | Pieza | Archivo STL / 3MF | Dimensiones (mm) | Función |
 |---|---|---|---|
-| **1. Chasis / Bandeja** | `chasis_bandeja` | 122.0 × 133.5 × 50.0 | Bandeja con bahía de batería extraíble, cunas para ESP32-S3, OV5640, LM2596, interruptor, LED y sílice + canales de cableado |
-| **2. Tapa / Carcasa** | `tapa_carcasa` | 129.8 × 136.4 × 32.5 | Tapa con sellado laberinto + labio flexible PETG y 6 clips snap-fit |
-| **3. Bisel de ventana** | `bisel_ventana` | 43.3 × 5.7 × 32.0 | Retiene la ventana óptica a presión |
+| **1. Chasis / Bandeja** | `chasis_bandeja` | 90.0 × 177.5 × 69.0 | Cámara en cara estrecha frontal, 2 rieles ranurados de 20 mm para los pines de la ESP32-S3 (con túnel de cables debajo), bahía de batería 70×60×20 y cuna para buck 70×30×20 al fondo, canaleta lateral de cables y riel inferior en T |
+| **2. Tapa / Carcasa** | `tapa_carcasa` | 97.8 × 180.4 × 32.5 | Tapa con sellado laberinto + labio flexible PETG y 6 clips snap-fit |
+| **3. Bisel de ventana** | `bisel_ventana` | 43.3 × 5.7 × 32.0 | Retiene la ventana óptica a presión en la cara estrecha frontal |
 | **4. Parasol / Capucha** | `parasol_capucha` | 68.0 × 38.7 × 33.6 | Antirreflejos + visera de lluvia, deslizante |
 | **5. Marco de tarjeta** | `marco_tarjeta` | 112.0 × 75.5 × 244.0 | Sostiene la tarjeta azul expuesta + gancho para colgar |
-| **6. Soporte base** | `soporte_base` | 128.0 × 244.0 × 114.6 | Base de mesa (presentación) + puente óptico a distancia fija |
+| **6. Soporte base** | `soporte_base` | 128.0 × 247.0 × 109.6 | Base de mesa (presentación) + puente óptico a distancia fija |
 
 > `ventana_pc` (25×25×2 mm) se **corta** en PC/acrílico y `tarjeta_azul` (100×250×1 mm) es la **tarjeta comercial**; ambos se incluyen en los modelos como referencia geométrica.
 
-## 7. Ensamble (sin herramientas)
+## 7. Versión ligera — optimizada para imprimir
 
-1. Colocar **cámara OV5640** en la cuna frontal (desliza desde arriba hasta hacer clic).
-2. Asentar **ESP32-S3** sobre sus 4 postes y enganchar las uñas de esquina.
-3. Insertar la **batería 12 V** en su bahía (las muescas laterales permiten extraerla con índice y pulgar; 2 clips la retienen).
-4. Colocar **LM2596, interruptor y LED** en sus bolsillos a presión.
-5. **Cablear** siguiendo el corredor-guía central con retenedores.
-6. Poner la **sílice** en su jaula ranurada.
-7. Colocar **ventana** sobre el labio anular y presionar el **bisel** hasta enganchar.
-8. Deslizar el **parasol** por las guías L frontales.
-9. Presionar la **tapa** desde arriba: laberinto + labio PETG + 6 clips perimetrales.
-10. Deslizar el POD por el riel inferior en T sobre la base y encajar el **marco** con la **tarjeta azul** deslizada desde arriba.
+Copia independiente del diseño en `src/ligero/` (salidas en `STL/ligero/` y `3MF/ligero/`).
+**Conserva todas las medidas externas, encajes, clips, laberinto y distancias ópticas**,
+pero adelgaza muros y vacía los macizos que no aportan nada:
 
-## 8. Sellado (Opción B, sin TPU)
+| Pieza | Volumen CAD original | Volumen CAD ligero | Ahorro |
+|---|---:|---:|---:|
+| Chasis / Bandeja | 167.9 cm³ | 110.2 cm³ | −34 % |
+| Tapa / Carcasa | 133.1 cm³ | 68.4 cm³ | −49 % |
+| Marco de tarjeta | 48.1 cm³ | 30.4 cm³ | −37 % |
+| Soporte base | 354.7 cm³ | 168.1 cm³ | −53 % |
+| Parasol | 12.1 cm³ | 8.5 cm³ | −30 % |
+| Bisel | 2.6 cm³ | 2.1 cm³ | −19 % |
+| **Total 6 piezas PETG** | **718.5 cm³** | **387.7 cm³** | **−46 %** |
+
+Qué cambia (y qué no):
+
+- **Chasis:** muros 3.1 → **1.8 mm**, piso 3.0 → **1.6 mm** (aligerado con ranuras
+  inferiores de 12–16 mm, puentes cortos y seguros), rieles de pines macizos → **puente
+  de 3 apoyos**, tabiques y canaleta 1.6 → **1.2 mm**. Mismos datums de cámara, ESP,
+  batería y buck.
+- **Tapa:** techo macizo → **cáscara de 2 mm**; los dos escalones decorativos se
+  convierten en **borde elevado + placa central** (misma silueta, 44 cm³ menos). El
+  laberinto, el labio PETG y los 6 clips quedan **idénticos**.
+- **Soporte base:** los travesaños y patines se ahuecan **por debajo** (invisible desde
+  arriba) y las columnas pasan a **celosía con ventanas en arco** (autoportantes).
+  La huella de mesa (128 × 247 mm) y los encajes POD/marco no cambian.
+- **Marco:** canales en C 9.5 × 9.0 → **6.5 × 6.0 mm**; el arco y el gancho superior
+  (donde cuelga todo el peso) se mantienen a 8 mm.
+
+> ⚠️ El **volumen CAD no es el filamento real**: al laminar, el interior se rellena con
+> *infill*. Para exprimir la versión ligera usa también estos ajustes.
+
+### Ajustes de laminado recomendados (Bambu Studio / OrcaSlicer)
+
+| Ajuste | Valor | Por qué |
+|---|---|---|
+| Densidad de relleno | **5–8 %** | El mayor ahorro; no es una pieza estructural |
+| Patrón de relleno | **Lightning** (o Gyroid) | Rellena solo donde la capa superior lo necesita |
+| Paredes / perímetros | **2** | Los muros de 1.8 mm ya son paredes puras |
+| Capas sólidas arriba / abajo | **2–3** | Menos material en el piso y el techo |
+| Altura de capa | **0.28 mm** (o adaptativa) | Imprime más rápido |
+| Soportes | **Ninguno** | Todas las piezas están diseñadas autoportantes |
+| Brim | 5 mm solo en `soporte_base` | Columnas altas y delgadas |
+
+Con esto, la base y la tapa bajan a la mitad de tiempo y peso frente a la versión original.
+
+## 8. Ensamble (sin herramientas)
+
+1. Colocar la **cámara OV5640** en la cuna frontal (desliza desde arriba hasta hacer clic).
+2. Asentar la **ESP32-S3** sobre los dos rieles ranurados (los pines quedan hacia arriba).
+3. Insertar la **batería 12 V** en su bahía (2 clips la retienen; se extrae con los dedos).
+4. Colocar el **buck** en su cuna al fondo.
+5. **Cablear:** 12 V por la canaleta lateral derecha (batería → buck) y 3.3 V por el túnel
+   bajo la ESP (buck → pines del header). Los retenedores dejan el cable tendido.
+6. Colocar la **ventana** sobre su labio y presionar el **bisel** hasta enganchar.
+7. Deslizar el **parasol** por las guías L frontales.
+8. Presionar la **tapa** desde arriba: laberinto + labio PETG + 6 clips perimetrales.
+9. Deslizar el POD por el riel en T sobre la base y encajar el **marco** con la **tarjeta azul** deslizada desde arriba.
+
+## 9. Sellado (Opción B, sin TPU)
 
 - **Laberinto macho-hembra:** solape perimetral que hace tortuosa la entrada de agua.
 - **Labio flexible PETG:** pestaña continua de ~0.7 mm que sella por contacto bajo la precarga de los clips.
-- **Desecante (sílice):** evita empañamiento/condensación en la ventana.
 
 Nivel realista: **resistente a lluvia/salpicaduras** (cercano a impermeable), no inmersión.
 
-## 9. Estructura del repositorio
+## 10. Estructura del repositorio
 
 ```
 trampa-trips/
-├── README.md                 # este archivo
-├── src/                      # modelos CAD paramétricos (build123d + cadgen)
-│   ├── README.md             # catálogo de modelos
-│   ├── lib/specs.py          # dimensiones, tolerancias y datums compartidos
-│   ├── lib/parts_factory.py  # geometría de cada pieza
-│   ├── chasis_bandeja.py
-│   ├── tapa_carcasa.py
-│   ├── ventana_pc.py
-│   ├── bisel_ventana.py
-│   ├── parasol_capucha.py
-│   ├── marco_tarjeta.py
-│   ├── tarjeta_azul.py
-│   ├── soporte_base.py
+├── README.md                    # este archivo
+├── src/                         # modelos CAD paramétricos (build123d + cadgen)
+│   ├── README.md                # catálogo de modelos
+│   ├── lib/specs.py             # dimensiones, tolerancias y datums compartidos
+│   ├── lib/parts_factory.py     # geometría de cada pieza (versión original)
+│   ├── chasis_bandeja.py        # … una entrada por pieza
 │   ├── componentes_internos.py
-│   └── assembly.py           # ensamble completo + poses cinemáticas
-├── checks/                   # verificación geométrica y de interferencias
-│   └── verify_assembly.py
-├── STL/                      # mallas listas para imprimir (laminar)
-└── 3MF/                      # archivos 3MF para Bambu Studio / OrcaSlicer
+│   ├── assembly.py              # ensamble completo + poses cinemáticas
+│   └── ligero/                  # ⇦ versión optimizada para imprimir
+│       ├── README.md            # qué se aligeró y ajustes de slicer
+│       ├── lib/specs_ligero.py  # specs idénticas (mismos datums)
+│       ├── lib/parts_ligero.py  # geometría aligerada
+│       └── assembly.py
+├── checks/
+│   ├── verify_assembly.py       # verificación del modelo original
+│   └── verify_ligero.py         # verificación + comparación de volumen y medidas
+├── STL/  · STL/ligero/          # mallas listas para imprimir
+└── 3MF/  · 3MF/ligero/          # archivos 3MF para Bambu Studio / OrcaSlicer
 ```
 
-## 10. Regenerar los modelos 3D
+## 11. Regenerar los modelos 3D
 
-Los archivos de impresión (STL/3MF) ya están incluidos. Si quieres **regenerarlos o modificar dimensiones**, edita `src/lib/specs.py` y ejecuta (requiere `uv`):
+Los archivos de impresión (STL/3MF) ya están incluidos. Si quieres **regenerarlos o
+modificar dimensiones**, edita las specs y ejecuta (requiere `uv`):
 
 ```bash
 cd trampa-trips
+
+# Versión original
 PYTHONPATH=src uvx --no-config --managed-python --python 3.13 --from cadgen==0.7.21 python src/assembly.py
-# verificación geométrica y de interferencias:
 uvx --no-config --managed-python --python 3.13 --from cadgen==0.7.21 python checks/verify_assembly.py
+
+# Versión ligera (optimizada para imprimir)
+PYTHONPATH=src/ligero uvx --no-config --managed-python --python 3.13 --from cadgen==0.7.21 python src/ligero/assembly.py
+uvx --no-config --managed-python --python 3.13 --from cadgen==0.7.21 python checks/verify_ligero.py
 ```
 
-Todas las cotas clave (tamaño de batería, cámara, placa, tolerancias de snap-fit) viven en `src/lib/specs.py`, de modo que ajustar el diseño a un componente real es cuestión de editar constantes y volver a correr.
+Todas las cotas clave (tamaño de batería, cámara, placa, tolerancias de snap-fit) viven en
+`src/lib/specs.py` (o `src/ligero/lib/specs_ligero.py`), de modo que ajustar el diseño a un
+componente real es cuestión de editar constantes y volver a correr.
 
-## 11. Estado y próximos pasos
+## 12. Estado y próximos pasos
 
 - [x] Diseño mecánico completo (6 piezas impresas + ventana + tarjeta).
-- [x] Verificación geométrica, topológica y de interferencias (0 colisiones en 171 pares).
+- [x] Verificación geométrica, topológica y de interferencias (0 colisiones en 190 pares).
+- [x] Versión ligera para impresión (−46 % de material, mismas medidas).
 - [ ] Impresión PETG y ensamble físico.
-- [ ] Firmware ESP32-S3: captura a microSD, deep-sleep, LED de estado, estimación de densidad.
-- [ ] Análisis fino de imágenes (OpenCV) en PC para calibrar el umbral de fumigación.
+- [ ] Firmware ESP32-S3: captura a microSD, deep-sleep, estimación de densidad.
+- [ ] Análisis de imágenes (OpenCV) en PC para calibrar el umbral de fumigación.
 
 ## Licencia
 
